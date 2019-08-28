@@ -221,7 +221,7 @@ void makeParticle(int x, int y)
     Particle *p = &g.particle[g.n];
     p->s.center.x = x;
     p->s.center.y = y;
-    p->velocity.y = -0.2;
+    //p->velocity.y = -0.2;
     p->velocity.x =  (double)rand() / (double)RAND_MAX - 0.5;
     p->velocity.y =  (double)rand() / (double)RAND_MAX - 0.5 + 0.2;
     ++g.n;
@@ -318,6 +318,7 @@ void movement()
 	//Shape *s;
 	Shape *s = &g.box;
 	if(((p->s.center.y < (s->center.y + s->height)) && 
+            (p->s.center.y > (s->center.y))         &&
 		    (p->s.center.x > (s->center.x - s->width)) && 
 		    (p->s.center.x < (s->center.x + s->width)) ) ){
 	    //p->s.center.y = p->velocity.y;
@@ -325,14 +326,6 @@ void movement()
 	    p->velocity.y = -p->velocity.y * 0.8;
 	}
 
-	//
-	if(((p->s.center.y < (s->center.y)) && 
-		    (p->s.center.x > (s->center.x - s->width)) && 
-		    (p->s.center.x < (s->center.x + s->width)) ) ){
-	    //p->s.center.y = p->velocity.y;
-	    //p->velocity.y = -p->velocity.y;
-	    p->velocity.y = GRAVITY;
-	}
 
 
 	//check for off-screen
