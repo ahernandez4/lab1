@@ -1,6 +1,6 @@
 //
-//modified by:
-//date:
+//modified by: Alejandro Hernandez
+//date: 09/02/19
 //
 //3350 Spring 2019 Lab-1
 //This program demonstrates the use of OpenGL and XWindows
@@ -30,6 +30,7 @@
 //   .more objects
 //
 #include <iostream>
+#include "fonts.h"
 using namespace std;
 #include <stdio.h>
 #include <cstdlib>
@@ -48,6 +49,17 @@ const float GRAVITY     = 0.1;
 struct Vec {
     float x, y, z;
 };
+//-------------------------------------------------------
+// setup external timers 
+// taken from asteroids
+
+extern struct timespec timeStart, timeCurrent, time1, time2;
+extern struct timespec timePause;
+extern double physicsCountdown;
+extern double timeSpan;
+extern double timeDiff(struct timespec *start, struct timespec *end);
+extern void timeCopy(struct timespec *dest, struct timespec *source);
+//-------------------------------------------------------
 
 struct Shape {
     float width, height;
@@ -67,6 +79,7 @@ class Global {
 	Particle particle[MAX_PARTICLES];
 	int n;
 	Global();
+    int fps;
 } g;
 
 class X11_wrapper {
@@ -101,6 +114,8 @@ int main()
     init_opengl();
     //Main animation loop
     int done = 0;
+    // initialize time1 here
+    clock_gettime(CLOCK_REALTIME, &time1);
     while (!done) {
 	//Process external events.
 	while (x11.getXPending()) {
@@ -207,6 +222,9 @@ void init_opengl(void)
     glOrtho(0, g.xres, 0, g.yres, -1, 1);
     //Set the screen background color
     glClearColor(0.1, 0.1, 0.1, 1.0);
+    //needed to print text
+    glEnable(GL_TEXTURE_2D);
+    initialize_fonts();
 }
 
 void makeParticle(int x, int y)
@@ -221,7 +239,7 @@ void makeParticle(int x, int y)
     Particle *p = &g.particle[g.n];
     p->s.center.x = x;
     p->s.center.y = y;
-    //p->velocity.y = -0.2;
+    p->velocity.y = -0.2;
     p->velocity.x =  (double)rand() / (double)RAND_MAX - 0.5;
     p->velocity.y =  (double)rand() / (double)RAND_MAX - 0.5 + 0.2;
     ++g.n;
@@ -318,7 +336,7 @@ void movement()
 	//Shape *s;
 	Shape *s = &g.box;
 	if(((p->s.center.y < (s->center.y + s->height)) && 
-            (p->s.center.y > (s->center.y))         &&
+            (p->s.center.y > s->center.y)           &&
 		    (p->s.center.x > (s->center.x - s->width)) && 
 		    (p->s.center.x < (s->center.x + s->width)) ) ){
 	    //p->s.center.y = p->velocity.y;
@@ -326,6 +344,7 @@ void movement()
 	    p->velocity.y = -p->velocity.y * 0.8;
 	}
 
+	//
 
 
 	//check for off-screen
@@ -349,6 +368,8 @@ void movement()
 
 void render()
 {
+    //let's use a static framecount
+    static int framecount = 0;
     glClear(GL_COLOR_BUFFER_BIT);
     //Draw shapes...
     //draw the box
@@ -385,12 +406,23 @@ void render()
 	glPopMatrix();
     }
     //
-    //Draw your 2D text here
-
-
-
-
-
+    //Draw your 2D text here not working
+    Rect r;
+	//
+	r.bot = g.yres - 20;
+	r.left = 10;
+	r.center = 0;
+    clock_gettime(CLOCK_REALTIME, &time2);
+    ggprint8b(&r, 16, 0x00ff0000, "3350 - Particles");
+    ggprint8b(&r, 16, 0x00ff0000, "FPS: %d", g.fps);
+    ggprint8b(&r, 16, 0x00ff0000, "Number of particles: %i", g.n);
+    ggprint8b(&r, 16, 0x00ff0000, "Requirements:");
+    if((timeDiff(&time1, &time2) >= double (1.0))){
+        clock_gettime(CLOCK_REALTIME, &time1);
+        g.fps = framecount;
+        framecount = 0;
+    }
+    framecount++;
 
 
 
