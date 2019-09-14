@@ -395,12 +395,12 @@ void render()
         Shape *s = &g.boxes[i];
         //s = &g.boxes[i];
         //troubleshoot
-        cout << "height " << s->height << endl;
-        cout << "width " << s->width << endl;
         glPushMatrix();
         glTranslatef(s->center.x, s->center.y, s->center.z);
         w = s->width;
         h = s->height;
+        cout << "height " << h << endl;
+        cout << "width " << w << endl;
         glBegin(GL_QUADS);
         glVertex2i(-w, -h);
         glVertex2i(-w,  h);
@@ -448,8 +448,6 @@ void render()
 }
 
 void makeBoxes() {
-    static int runonce = 0;
-    if(runonce == 0){
         for (int i = 0; i < BOXCOUNT; i++) {
             Shape *box = &g.boxes[BOXCOUNT];
             box->width = 100;
@@ -457,7 +455,5 @@ void makeBoxes() {
             box->center.x = (120 + 5*65) - (25*i) ;
             box->center.y = (500 - 5*60) - (10*i) ;
         }
-    }
-    runonce = 1;
 }
 
