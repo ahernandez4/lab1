@@ -43,7 +43,7 @@ using namespace std;
 
 const int MAX_PARTICLES = 1000;
 const float GRAVITY     = 0.1;
-
+const int BOXCOUNT = 5;
 //some structures
 
 struct Vec {
@@ -74,26 +74,28 @@ struct Particle {
 
 class Global {
     public:
-	int xres, yres;
-	Shape box;
-	Particle particle[MAX_PARTICLES];
-	int n;
-	Global();
-    int fps;
+        int xres, yres;
+        //used to be Shape box
+        //Shape box;
+        Shape boxes[BOXCOUNT];
+        Particle particle[MAX_PARTICLES];
+        int n;
+        Global();
+        int fps;
 } g;
 
 class X11_wrapper {
     private:
-	Display *dpy;
-	Window win;
-	GLXContext glc;
+        Display *dpy;
+        Window win;
+        GLXContext glc;
     public:
-	~X11_wrapper();
-	X11_wrapper();
-	void set_title();
-	bool getXPending();
-	XEvent getXNextEvent();
-	void swapBuffers();
+        ~X11_wrapper();
+        X11_wrapper();
+        void set_title();
+        bool getXPending();
+        XEvent getXNextEvent();
+        void swapBuffers();
 } x11;
 
 //Function prototypes
@@ -102,7 +104,8 @@ void check_mouse(XEvent *e);
 int check_keys(XEvent *e);
 void movement();
 void render();
-
+//added on 09/14
+void makeBoxes();
 
 
 //=====================================
@@ -116,16 +119,22 @@ int main()
     int done = 0;
     // initialize time1 here
     clock_gettime(CLOCK_REALTIME, &time1);
+    cout << "in main" << endl;
+    makeBoxes();
+    Shape *s = &g.boxes[1];
+    cout << "height " << s->height << endl;
+    cout << "width " << s->width << endl;
+   
     while (!done) {
-	//Process external events.
-	while (x11.getXPending()) {
-	    XEvent e = x11.getXNextEvent();
-	    check_mouse(&e);
-	    done = check_keys(&e);
-	}
-	movement();
-	render();
-	x11.swapBuffers();
+        //Process external events.
+        while (x11.getXPending()) {
+            XEvent e = x11.getXNextEvent();
+            check_mouse(&e);
+            done = check_keys(&e);
+        }
+        movement();
+        render();
+        x11.swapBuffers();
     }
     return 0;
 }
@@ -138,10 +147,10 @@ Global::Global()
     xres = 800;
     yres = 600;
     //define a box shape
-    box.width = 100;
-    box.height = 10;
-    box.center.x = 120 + 5*65;
-    box.center.y = 500 - 5*60;
+    //box.width = 100;
+    //box.height = 10;
+    //box.center.x = 120 + 5*65;
+    //box.center.y = 500 - 5*60;
     n = 0;
 }
 
@@ -160,25 +169,25 @@ X11_wrapper::X11_wrapper()
     int w = g.xres, h = g.yres;
     dpy = XOpenDisplay(NULL);
     if (dpy == NULL) {
-	cout << "\n\tcannot connect to X server\n" << endl;
-	exit(EXIT_FAILURE);
+        cout << "\n\tcannot connect to X server\n" << endl;
+        exit(EXIT_FAILURE);
     }
     Window root = DefaultRootWindow(dpy);
     XVisualInfo *vi = glXChooseVisual(dpy, 0, att);
     if (vi == NULL) {
-	cout << "\n\tno appropriate visual found\n" << endl;
-	exit(EXIT_FAILURE);
+        cout << "\n\tno appropriate visual found\n" << endl;
+        exit(EXIT_FAILURE);
     } 
     Colormap cmap = XCreateColormap(dpy, root, vi->visual, AllocNone);
     XSetWindowAttributes swa;
     swa.colormap = cmap;
     swa.event_mask =
-	ExposureMask | KeyPressMask | KeyReleaseMask |
-	ButtonPress | ButtonReleaseMask |
-	PointerMotionMask |
-	StructureNotifyMask | SubstructureNotifyMask;
+        ExposureMask | KeyPressMask | KeyReleaseMask |
+        ButtonPress | ButtonReleaseMask |
+        PointerMotionMask |
+        StructureNotifyMask | SubstructureNotifyMask;
     win = XCreateWindow(dpy, root, 0, 0, w, h, 0, vi->depth,
-	    InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
+            InputOutput, vi->visual, CWColormap | CWEventMask, &swa);
     set_title();
     glc = glXCreateContext(dpy, vi, NULL, GL_TRUE);
     glXMakeCurrent(dpy, win, glc);
@@ -232,7 +241,7 @@ void makeParticle(int x, int y)
     //Add a particle to the particle system.
     //
     if (g.n >= MAX_PARTICLES)
-	return;
+        return;
     cout << "makeParticle() " << x << " " << y << endl;
     //set position of particle
     //Particle *p = &g.particle;//changed from &g.particle
@@ -252,71 +261,71 @@ void check_mouse(XEvent *e)
 
     //Weed out non-mouse events
     if (e->type != ButtonRelease &&
-	    e->type != ButtonPress &&
-	    e->type != MotionNotify) {
-	//This is not a mouse event that we care about.
-	return;
+            e->type != ButtonPress &&
+            e->type != MotionNotify) {
+        //This is not a mouse event that we care about.
+        return;
     }
     //
     if (e->type == ButtonRelease) {
-	return;
+        return;
     }
     if (e->type == ButtonPress) {
-	if (e->xbutton.button==1) {
-	    //Left button was pressed.
-	    int y = g.yres - e->xbutton.y;
-	    //makeParticle(e->xbutton.x, y);
-	    for(int i = 0; i < 10; i++){
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-		makeParticle(e->xbutton.x, y);
-	    }
-	    return;
-	}
-	if (e->xbutton.button==3) {
-	    //Right button was pressed.
-	    return;
-	}
+        if (e->xbutton.button==1) {
+            //Left button was pressed.
+            int y = g.yres - e->xbutton.y;
+            //makeParticle(e->xbutton.x, y);
+            for(int i = 0; i < 10; i++){
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+                makeParticle(e->xbutton.x, y);
+            }
+            return;
+        }
+        if (e->xbutton.button==3) {
+            //Right button was pressed.
+            return;
+        }
     }
     if (e->type == MotionNotify) {
-	//The mouse moved!
-	if (savex != e->xbutton.x || savey != e->xbutton.y) {
-	    savex = e->xbutton.x;
-	    savey = e->xbutton.y;
-	    //Code placed here will execute whenever the mouse moves.
-	    for(int i = 0; i < 10; i++){//changed from 10
-		int y = g.yres - e->xbutton.y;
-		makeParticle(e->xbutton.x, y);
-	    }
+        //The mouse moved!
+        if (savex != e->xbutton.x || savey != e->xbutton.y) {
+            savex = e->xbutton.x;
+            savey = e->xbutton.y;
+            //Code placed here will execute whenever the mouse moves.
+            for(int i = 0; i < 10; i++){//
+                int y = g.yres - e->xbutton.y;
+                makeParticle(e->xbutton.x, y);
+            }
 
-	}
+        }
     }
 }
 
 int check_keys(XEvent *e)
 {
     if (e->type != KeyPress && e->type != KeyRelease)
-	return 0;
+        return 0;
     int key = XLookupKeysym(&e->xkey, 0);
     if (e->type == KeyPress) {
-	switch (key) {
-	    case XK_1:
-		//Key 1 was pressed
-		break;
-	    case XK_a:
-		//Key A was pressed
-		break;
-	    case XK_Escape:
-		//Escape key was pressed
-		return 1;
-	}
+        switch (key) {
+            case XK_1:
+                //Key 1 was pressed
+                break;
+            case XK_a:
+                //Key A was pressed
+                break;
+            case XK_Escape:
+                //Escape key was pressed
+                return 1;
+        }
     }
     return 0;
 }
@@ -324,44 +333,47 @@ int check_keys(XEvent *e)
 void movement()
 {
     if (g.n <= 0)
-	return;
+        return;
     for(int i = 0; i < g.n; i++){
-	Particle *p = &g.particle[i];
-	p->s.center.x += p->velocity.x;
-	p->s.center.y += p->velocity.y;
-	p->velocity.y -= GRAVITY;    
+        Particle *p = &g.particle[i];
+        p->s.center.x += p->velocity.x;
+        p->s.center.y += p->velocity.y;
+        p->velocity.y -= GRAVITY;    
 
 
-	//check for collision with shapes...
-	//Shape *s;
-	Shape *s = &g.box;
-	if(((p->s.center.y < (s->center.y + s->height)) && 
-            (p->s.center.y > s->center.y)           &&
-		    (p->s.center.x > (s->center.x - s->width)) && 
-		    (p->s.center.x < (s->center.x + s->width)) ) ){
-	    //p->s.center.y = p->velocity.y;
-	    //p->velocity.y = -p->velocity.y;
-	    p->velocity.y = -p->velocity.y * 0.8;
-	}
+        //check for collision with shapes...
+        //Shape *s;
+        //used to be Shape* s  = &g.box
+        //Shape *s = &g.box;
+        for (int j = 0; j < BOXCOUNT; j++) {
+            Shape *s = &g.boxes[j];
+            if(((p->s.center.y < (s->center.y + s->height)) && 
+                        (p->s.center.y > s->center.y)           &&
+                        (p->s.center.x > (s->center.x - s->width)) && 
+                        (p->s.center.x < (s->center.x + s->width)) ) ){
+                //p->s.center.y = p->velocity.y;
+                //p->velocity.y = -p->velocity.y;
+                p->velocity.y = -p->velocity.y * 0.8;
+            }
+        }
+        //
 
-	//
 
+        //check for off-screen
+        if (p->s.center.y < 0.0) {
+            cout << "off screen" << endl;
+            //g.n = 0;
+            //--g.n;
+            g.particle[i] = g.particle[--g.n];
 
-	//check for off-screen
-	if (p->s.center.y < 0.0) {
-	    cout << "off screen" << endl;
-	    //g.n = 0;
-	    //--g.n;
-	    g.particle[i] = g.particle[--g.n];
-
-	}
-	//
-	if(p->s.center.y > 600){
-	    cout << "off screen" << endl;
-	    //g.n = 0;
-	    //--g.n;
-	    g.particle[i] = g.particle[--g.n];
-	}
+        }
+        //
+        if(p->s.center.y > 600){
+            cout << "off screen" << endl;
+            //g.n = 0;
+            //--g.n;
+            g.particle[i] = g.particle[--g.n];
+        }
     }
     //
 }
@@ -373,45 +385,53 @@ void render()
     glClear(GL_COLOR_BUFFER_BIT);
     //Draw shapes...
     //draw the box
-    Shape *s;
-    glColor3ub(90,140,90);
-    s = &g.box;
-    glPushMatrix();
-    glTranslatef(s->center.x, s->center.y, s->center.z);
+    //used to be
+    //Shape *s;
     float w, h;
-    w = s->width;
-    h = s->height;
-    glBegin(GL_QUADS);
-    glVertex2i(-w, -h);
-    glVertex2i(-w,  h);
-    glVertex2i( w,  h);
-    glVertex2i( w, -h);
-    glEnd();
-    glPopMatrix();
+    for (int i = 0; i < BOXCOUNT; i++) {
+
+        glColor3ub(90,140,90);
+        Shape *s = &g.boxes[i];
+        //s = &g.boxes[i];
+        //troubleshoot
+        cout << "height " << s->height << endl;
+        cout << "width " << s->width << endl;
+        glPushMatrix();
+        glTranslatef(s->center.x, s->center.y, s->center.z);
+        w = s->width;
+        h = s->height;
+        glBegin(GL_QUADS);
+        glVertex2i(-w, -h);
+        glVertex2i(-w,  h);
+        glVertex2i( w,  h);
+        glVertex2i( w, -h);
+        glEnd();
+        glPopMatrix();
+    }
     //
     //Draw particles here
     //if (g.n > 0) {
     for(int i = 0; i < g.n; i++){
-	//There is at least one particle to draw.
-	glPushMatrix();
-	glColor3ub(150,160,220);
-	Vec *c = &g.particle[i].s.center;
-	w = h = 2;
-	glBegin(GL_QUADS);
-	glVertex2i(c->x-w, c->y-h);
-	glVertex2i(c->x-w, c->y+h);
-	glVertex2i(c->x+w, c->y+h);
-	glVertex2i(c->x+w, c->y-h);
-	glEnd();
-	glPopMatrix();
+        //There is at least one particle to draw.
+        glPushMatrix();
+        glColor3ub(150,160,220);
+        Vec *c = &g.particle[i].s.center;
+        w = h = 2;
+        glBegin(GL_QUADS);
+        glVertex2i(c->x-w, c->y-h);
+        glVertex2i(c->x-w, c->y+h);
+        glVertex2i(c->x+w, c->y+h);
+        glVertex2i(c->x+w, c->y-h);
+        glEnd();
+        glPopMatrix();
     }
     //
     //Draw your 2D text here not working
     Rect r;
-	//
-	r.bot = g.yres - 20;
-	r.left = 10;
-	r.center = 0;
+    //
+    r.bot = g.yres - 20;
+    r.left = 10;
+    r.center = 0;
     clock_gettime(CLOCK_REALTIME, &time2);
     ggprint8b(&r, 16, 0x00ff0000, "3350 - Particles");
     ggprint8b(&r, 16, 0x00ff0000, "FPS: %d", g.fps);
@@ -424,13 +444,15 @@ void render()
     }
     framecount++;
 
-
-
-
 }
 
-
-
-
-
+void makeBoxes(){
+    for (int i = 0; i < BOXCOUNT; i++) {
+        Shape *box = &g.boxes[BOXCOUNT];
+        box->width = 100;
+        box->height = 10;
+        box->center.x = (120 + 5*65) - (25*i) ;
+        box->center.y = (500 - 5*60) - (10*i) ;
+    }
+}
 
