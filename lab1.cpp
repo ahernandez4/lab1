@@ -119,12 +119,12 @@ int main()
     int done = 0;
     // initialize time1 here
     clock_gettime(CLOCK_REALTIME, &time1);
-    cout << "in main" << endl;
-    makeBoxes();
-    Shape *s = &g.boxes[1];
-    cout << "height " << s->height << endl;
-    cout << "width " << s->width << endl;
-   
+    //cout << "in main" << endl;
+    //makeBoxes();
+    //Shape *s = &g.boxes[1];
+    //cout << "height " << s->height << endl;
+    //cout << "width " << s->width << endl;
+
     while (!done) {
         //Process external events.
         while (x11.getXPending()) {
@@ -383,6 +383,7 @@ void render()
     //let's use a static framecount
     static int framecount = 0;
     glClear(GL_COLOR_BUFFER_BIT);
+    makeBoxes();
     //Draw shapes...
     //draw the box
     //used to be
@@ -446,13 +447,17 @@ void render()
 
 }
 
-void makeBoxes(){
-    for (int i = 0; i < BOXCOUNT; i++) {
-        Shape *box = &g.boxes[BOXCOUNT];
-        box->width = 100;
-        box->height = 10;
-        box->center.x = (120 + 5*65) - (25*i) ;
-        box->center.y = (500 - 5*60) - (10*i) ;
+void makeBoxes() {
+    static int runonce = 0;
+    if(runonce == 0){
+        for (int i = 0; i < BOXCOUNT; i++) {
+            Shape *box = &g.boxes[BOXCOUNT];
+            box->width = 100;
+            box->height = 10;
+            box->center.x = (120 + 5*65) - (25*i) ;
+            box->center.y = (500 - 5*60) - (10*i) ;
+        }
     }
+    runonce = 1;
 }
 
