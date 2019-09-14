@@ -447,13 +447,14 @@ void render()
 
 }
 
-void makeBoxes() {
-        for (int i = 0; i < BOXCOUNT; i++) {
-            Shape *box = &g.boxes[BOXCOUNT];
-            box->width = 100;
-            box->height = 10;
-            box->center.x = (120 + 5*65) - (25*i) ;
-            box->center.y = (500 - 5*60) - (10*i) ;
-        }
+void makeBoxes() 
+{
+    for (int i = 0; i < BOXCOUNT; i++) {
+        Shape *box = &g.boxes[i];
+        box->width = 100;
+        box->height = 10;
+        box->center.x = (-40 + 5*65) + (25*i) ;
+        box->center.y = (750 - 5*60) - (40*i) ;
+    }
 }
 
