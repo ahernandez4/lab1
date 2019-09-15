@@ -345,12 +345,8 @@ void movement()
         p->s.center.x += p->velocity.x;
         p->s.center.y += p->velocity.y;
         p->velocity.y -= GRAVITY;    
-
-
         //check for collision with shapes...
-        //Shape *s;
         //used to be Shape* s  = &g.box
-        //Shape *s = &g.box;
         for (int j = 0; j < BOXCOUNT; j++) {
             Shape *s = &g.boxes[j];
             if(((p->s.center.y < (s->center.y + s->height)) && 
@@ -362,31 +358,22 @@ void movement()
                 p->velocity.y = -p->velocity.y * 0.8;
             }
         }
-        //
-
 
         //check for off-screen
         if (p->s.center.y < 0.0) {
             cout << "off screen" << endl;
-            //g.n = 0;
-            //--g.n;
             g.particle[i] = g.particle[--g.n];
-
         }
-        //
         if(p->s.center.y > 600){
             cout << "off screen" << endl;
-            //g.n = 0;
-            //--g.n;
             g.particle[i] = g.particle[--g.n];
         }
     }
-    //
 }
 
 void render()
 {
-    //let's use a static framecount
+    //using a static framecount
     static int framecount = 0;
     glClear(GL_COLOR_BUFFER_BIT);
     makeBoxes();
@@ -396,7 +383,6 @@ void render()
     //Shape *s;
     float w, h;
     for (int i = 0; i < BOXCOUNT; i++) {
-
         glColor3ub(90,140,90);
         Shape *s = &g.boxes[i];
         //s = &g.boxes[i];
@@ -435,7 +421,6 @@ void render()
     //
     //Draw your 2D text here not working
     Rect r;
-    //
     r.bot = g.yres - 20;
     r.left = 10;
     r.center = 0;
@@ -451,9 +436,6 @@ void render()
     }
     framecount++;
 
-    //Rect *rbox = &g.textbox[4];
-    //ggprint8b(rbox, 0, 0x00ff0000, "fuck this ship");
-    //ggprint8b(rbox, 0, 0x00ff0000, waterfallModel[4]);
 }
 
 void makeBoxes() 
