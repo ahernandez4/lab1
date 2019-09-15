@@ -41,9 +41,12 @@ using namespace std;
 #include <X11/keysym.h>
 #include <GL/glx.h>
 
+//some constant variables
 const int MAX_PARTICLES = 1000;
 const float GRAVITY     = 0.1;
 const int BOXCOUNT = 5;
+const char *waterfallModel[] = {"Requirements","Design","Implementation",
+                    "Verification","Maintenance"};
 //some structures
 
 struct Vec {
@@ -78,6 +81,9 @@ class Global {
         //used to be Shape box
         //Shape box;
         Shape boxes[BOXCOUNT];
+        //text rect array
+        Rect textbox[BOXCOUNT];
+
         Particle particle[MAX_PARTICLES];
         int n;
         Global();
@@ -394,13 +400,10 @@ void render()
         glColor3ub(90,140,90);
         Shape *s = &g.boxes[i];
         //s = &g.boxes[i];
-        //troubleshoot
         glPushMatrix();
         glTranslatef(s->center.x, s->center.y, s->center.z);
         w = s->width;
         h = s->height;
-        cout << "height " << h << endl;
-        cout << "width " << w << endl;
         glBegin(GL_QUADS);
         glVertex2i(-w, -h);
         glVertex2i(-w,  h);
@@ -408,6 +411,9 @@ void render()
         glVertex2i( w, -h);
         glEnd();
         glPopMatrix();
+        Rect *rbox = &g.textbox[i];
+        ggprint8b(rbox, 16, 0x00ff0000, waterfallModel[i]);
+
     }
     //
     //Draw particles here
@@ -445,6 +451,9 @@ void render()
     }
     framecount++;
 
+    //Rect *rbox = &g.textbox[4];
+    //ggprint8b(rbox, 0, 0x00ff0000, "fuck this ship");
+    //ggprint8b(rbox, 0, 0x00ff0000, waterfallModel[4]);
 }
 
 void makeBoxes() 
@@ -453,8 +462,12 @@ void makeBoxes()
         Shape *box = &g.boxes[i];
         box->width = 100;
         box->height = 10;
-        box->center.x = (-40 + 5*65) + (25*i) ;
-        box->center.y = (750 - 5*60) - (40*i) ;
+        box->center.x = (-40 + 5*65) + (25*i);
+        box->center.y = (750 - 5*60) - (40*i);
+        Rect *r = &g.textbox[i];
+        r->bot = box->center.y - 5;
+        r->left = box->center.x - 40;
+        r->center = 0;
     }
 }
 
